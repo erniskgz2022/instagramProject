@@ -1,6 +1,7 @@
 package java19.instagramproject.service.impl;
 
 import jakarta.transaction.Transactional;
+import java19.instagramproject.config.security.AccessGuard;
 import java19.instagramproject.dto.CommentDto.request.CommentRequest;
 import java19.instagramproject.dto.CommentDto.response.CommentResponse;
 import java19.instagramproject.dto.userDto.SimpleResponse;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.List;
 @Service
@@ -25,6 +27,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepo  commentRepo;
     private final UserRepo userRepo;
     private final PostRepo postRepo;
+    private final AccessGuard accessGuard;
     @Override
     public SimpleResponse save(Long userId, Long postId, CommentRequest request) {
         User user = userRepo.findById(userId)
@@ -69,8 +72,9 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public SimpleResponse deleteById(Long id) {
+    public SimpleResponse deleteById(Long id) throws AccessDeniedException {
         Comment comment = commentRepo.findById(id).orElseThrow(() -> new RuntimeException("Comment not found!"));
+        accessGuard.allow(comment.getUser().getId());
         commentRepo.delete(comment);
         return SimpleResponse.builder().httpStatus(HttpStatus.OK).message("Comment deleted successfully!!").build();
     }

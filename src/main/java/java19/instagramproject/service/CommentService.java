@@ -4,10 +4,11 @@ import java19.instagramproject.dto.CommentDto.request.CommentRequest;
 import java19.instagramproject.dto.CommentDto.response.CommentResponse;
 import java19.instagramproject.dto.userDto.SimpleResponse;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 public interface CommentService {
     SimpleResponse save(Long userId,Long postId, CommentRequest request);
     List<CommentResponse> findAllByPostId(Long postId);
-    SimpleResponse deleteById(Long id);
+    SimpleResponse deleteById(Long id) throws AccessDeniedException;
 }

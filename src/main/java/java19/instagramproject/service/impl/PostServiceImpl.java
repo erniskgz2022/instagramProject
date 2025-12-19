@@ -1,6 +1,8 @@
 package java19.instagramproject.service.impl;
 
 import jakarta.transaction.Transactional;
+import java19.instagramproject.config.security.AccessGuard;
+import java19.instagramproject.config.security.CurrentUserProvider;
 import java19.instagramproject.dto.postDto.request.PostRequest;
 import java19.instagramproject.dto.postDto.response.PostResponse;
 import java19.instagramproject.dto.userDto.SimpleResponse;
@@ -12,10 +14,13 @@ import java19.instagramproject.repo.PostRepo;
 import java19.instagramproject.repo.UserRepo;
 import java19.instagramproject.service.PostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,20 +31,20 @@ public class PostServiceImpl implements PostService {
 
     private final PostRepo postRepo;
     private final UserRepo userRepo;
+    private final CurrentUserProvider currentUserProvider;
+    private final AccessGuard accessGuard;
 
     @Override
-    public SimpleResponse savePost(Long userId, PostRequest request) {
+    public SimpleResponse savePost( PostRequest request) throws AccessDeniedException {
         if (request.images() == null || request.images().isEmpty()) {
             throw new IllegalArgumentException("Images cannot be empty");
         }
-
-        User user = userRepo.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
-
+        User currentUser = currentUserProvider.getCurrentUser();
         Post post = new Post();
         post.setTitle(request.title());
         post.setDescription(request.description());
         post.setCreatedAt(LocalDateTime.now());
-        post.setUser(user);
+        post.setUser(currentUser);
 
         if (request.taggedUserIds() != null) {
             for (Long id : request.taggedUserIds()) {
@@ -59,7 +64,7 @@ public class PostServiceImpl implements PostService {
         Like like = new Like();
         like.setLike(false);
         like.setPost(post);
-        like.setUser(user);
+        like.setUser(currentUser);
         post.getLikes().add(like);
 
         postRepo.save(post);
@@ -100,20 +105,12 @@ public class PostServiceImpl implements PostService {
                 .toList();
     }
     @Override
-    public SimpleResponse update(Long postId, PostRequest request) {
-
-        Long currentUserId = (Long) SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal();
-
+    public SimpleResponse update(Long postId, PostRequest request) throws AccessDeniedException {
 
         Post post = postRepo.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
-        if (!post.getUser().getId().equals(currentUserId)) {
-            throw new RuntimeException("You are not the owner of this post!");
-        }
+        accessGuard.allow(post.getUser().getId());
 
         post.setTitle(request.title());
         post.setDescription(request.description());
@@ -128,18 +125,11 @@ public class PostServiceImpl implements PostService {
 
 
     @Override
-    public SimpleResponse delete(Long postId) {
-        Long currentUserId = (Long) SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal();
+    public SimpleResponse delete(Long postId) throws AccessDeniedException {
 
         Post post = postRepo.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
-
-        if (!post.getUser().getId().equals(currentUserId)) {
-            throw new RuntimeException("You are not the owner of this post!");
-        }
+        accessGuard.allow(post.getUser().getId());
 
         return  SimpleResponse
                 .builder()
@@ -147,6 +137,7 @@ public class PostServiceImpl implements PostService {
                 .message("Post successfully deleted!")
                 .build();
     }
+
 
     @Override
     public List<PostResponse> feed(Long userId) {
@@ -173,5 +164,36 @@ public class PostServiceImpl implements PostService {
                         .build())
                 .toList();
     }
+
+    @Override
+    public Page<PostResponse> getAll(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Post> posts;
+        if (userId == null) {
+            posts = postRepo.findAll(pageable);               // bardyk posttor
+        } else {
+            posts = postRepo.findAllByUserId(userId, pageable); // user posttory
+        }
+        return posts.map(post -> PostResponse.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .description(post.getDescription())
+                .createdAt(post.getCreatedAt())
+                .images(
+                        post.getImages()
+                                .stream()
+                                .map(Image::getImageUrl)
+                                .toList()
+                )
+                .likeCount(post.getLikes().size())
+                .taggedUsers(
+                        post.getTaggedUsers()
+                                .stream()
+                                .map(User::getUserName)
+                                .toList()
+                )
+                .build());
+    }
+
 }
 

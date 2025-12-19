@@ -1,5 +1,8 @@
 package java19.instagramproject.api;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java19.instagramproject.dto.userDto.request.SignInRequest;
 import java19.instagramproject.dto.userDto.request.SignUpRequest;
 import java19.instagramproject.dto.userDto.response.AuthResponse;
@@ -9,20 +12,30 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+@Tag(name = "Authentication", description = "User registration and login")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthApi {
     private final AuthService authService;
-
-    @PostMapping("/signUp")
-    public AuthResponse signUp(@RequestBody SignUpRequest request) {
+    @Operation(
+            summary = "Sign up",
+            description = "Register a new user account"
+    )
+    @PostMapping(
+            value = "/signUp",
+            consumes = "application/json",
+            produces = "application/json"
+    )
+    public AuthResponse signUp(@Valid @RequestBody SignUpRequest request) {
         return authService.signUp(request);
     }
-
+    @Operation(
+            summary = "Sign in",
+            description = "Authenticate user and return JWT token"
+    )
     @PostMapping("/signIn")
-    public AuthResponse signIn(@RequestBody SignInRequest request) {
+    public AuthResponse signIn(@Valid @RequestBody SignInRequest request) {
         return authService.signIn(request);
     }
 }

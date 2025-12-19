@@ -2,6 +2,7 @@ package java19.instagramproject.service.impl;
 
 import jakarta.transaction.Transactional;
 import java19.instagramproject.config.jwt.JwtService;
+import java19.instagramproject.config.security.AccessGuard;
 import java19.instagramproject.dto.postDto.response.PostResponse;
 import java19.instagramproject.dto.userDto.SimpleResponse;
 import java19.instagramproject.dto.userDto.request.SignInRequest;
@@ -20,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -30,9 +32,11 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
     private final UserRepo  userRepo;
     private final PasswordEncoder passwordEncoder;
+    private final AccessGuard accessGuard;
 
     @Override
-    public List<UserListResponse> getUsers() {
+    public List<UserListResponse> getUsers() throws AccessDeniedException {
+        accessGuard.admin();
         return userRepo.getUsers();
     }
 
@@ -88,7 +92,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public SimpleResponse update(Long id, SignUpRequest request) {
+    public SimpleResponse update(Long id, SignUpRequest request) throws AccessDeniedException {
+
+        accessGuard.allow(id);
+
         User user = findUserById(id);
         if(!request.phoneNumber().startsWith("+996")) {
             return new SimpleResponse(HttpStatus.BAD_REQUEST, "Phone number must start with +996!");
@@ -109,10 +116,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public SimpleResponse delete(Long id) {
+    public SimpleResponse delete(Long id) throws AccessDeniedException {
         if(!userRepo.existsById(id)) {
             return new SimpleResponse(HttpStatus.BAD_REQUEST, "User not found!");
         }
+        accessGuard.admin();
         userRepo.deleteById(id);
         return SimpleResponse
                 .builder()

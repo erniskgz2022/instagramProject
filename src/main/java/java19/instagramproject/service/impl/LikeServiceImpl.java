@@ -1,6 +1,7 @@
 package java19.instagramproject.service.impl;
 
 import jakarta.transaction.Transactional;
+import java19.instagramproject.config.security.AccessGuard;
 import java19.instagramproject.dto.userDto.SimpleResponse;
 import java19.instagramproject.entity.Like;
 import java19.instagramproject.entity.Post;
@@ -13,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -21,9 +24,10 @@ public class LikeServiceImpl implements LikeService {
     private final LikeRepo likeRepo;
     private final PostRepo postRepo;
     private final UserRepo userRepo;
+    private final AccessGuard accessGuard;
 
     @Override
-    public SimpleResponse likePost(Long userId, Long postId) {
+    public SimpleResponse likePost(Long userId, Long postId) throws AccessDeniedException {
 
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found!"));
@@ -37,6 +41,7 @@ public class LikeServiceImpl implements LikeService {
             return new SimpleResponse(HttpStatus.OK, "Like removed");
         }
 
+        accessGuard.allow(userId);
         Like like = new Like();
         like.setLike(true);
         like.setUser(user);

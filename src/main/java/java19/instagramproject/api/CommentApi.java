@@ -1,14 +1,14 @@
 package java19.instagramproject.api;
 
+import jakarta.validation.Valid;
 import java19.instagramproject.dto.CommentDto.request.CommentRequest;
 import java19.instagramproject.dto.CommentDto.response.CommentResponse;
 import java19.instagramproject.dto.userDto.SimpleResponse;
-import java19.instagramproject.repo.CommentRepo;
 import java19.instagramproject.service.CommentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RestController
@@ -19,10 +19,9 @@ public class CommentApi {
 
 
     @PostMapping("/{userId}/{postId}")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public SimpleResponse save(@PathVariable Long userId,
                                @PathVariable Long postId,
-                               @RequestBody CommentRequest request){
+                               @Valid @RequestBody CommentRequest request){
         return commentService.save(userId,postId,request);
     }
 
@@ -32,8 +31,7 @@ public class CommentApi {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or @commentSecurity.isOwner(#id)")
-    public SimpleResponse deleteById(@PathVariable Long id){
+    public SimpleResponse deleteById(@PathVariable Long id) throws AccessDeniedException {
         return commentService.deleteById(id);
     }
 }

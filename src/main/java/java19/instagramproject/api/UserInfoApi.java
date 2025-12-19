@@ -1,5 +1,6 @@
 package java19.instagramproject.api;
 
+import jakarta.validation.Valid;
 import java19.instagramproject.dto.userDto.SimpleResponse;
 import java19.instagramproject.dto.userInfoDto.request.UserInfoRequest;
 import java19.instagramproject.dto.userInfoDto.response.UserInfoResponse;
@@ -8,14 +9,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
+
 @RestController
 @RequestMapping("api/usersInfo")
 @RequiredArgsConstructor
 public class UserInfoApi {
     private final UserInfoService userInfoService;
     @PostMapping("/{userId}")
-    @PreAuthorize("#userId == authentication.principal.id or hasRole('ADMIN')")
-    public SimpleResponse saveUserInfo(@PathVariable Long userId, @RequestBody UserInfoRequest request){
+    public SimpleResponse saveUserInfo(@PathVariable Long userId,
+                                       @Valid @RequestBody UserInfoRequest request){
         return userInfoService.saveUserInfo(userId, request);
     }
 
@@ -25,20 +28,19 @@ public class UserInfoApi {
     }
 
     @PutMapping("/{userId}")
-    @PreAuthorize("#userId == authentication.principal.id or hasRole('ADMIN')")
-    public SimpleResponse update(@PathVariable Long userId, @RequestBody UserInfoRequest request){
+    public SimpleResponse update(@PathVariable Long userId,
+                                 @Valid @RequestBody UserInfoRequest request) throws AccessDeniedException {
         return userInfoService.update(userId, request);
     }
 
     @PatchMapping("/{userId}/change-image")
-    @PreAuthorize("#userId == authentication.principal.id or hasRole('ADMIN')")
-    public SimpleResponse changeImage(@PathVariable Long userId, @RequestBody String newImage ){
+    public SimpleResponse changeImage(@PathVariable Long userId,
+                                      @Valid @RequestBody String newImage ) throws AccessDeniedException {
         return userInfoService.changeImage(userId,newImage);
     }
 
     @PatchMapping("/{userId}/delete-image")
-    @PreAuthorize("#userId == authentication.principal.id or hasRole('ADMIN')")
-    public SimpleResponse deleteImage(@PathVariable Long userId ){
+    public SimpleResponse deleteImage(@PathVariable Long userId ) throws AccessDeniedException {
         return userInfoService.deleteImage(userId);
     }
 }

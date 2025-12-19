@@ -2,7 +2,6 @@ package java19.instagramproject.service.impl;
 
 import jakarta.transaction.Transactional;
 import java19.instagramproject.config.jwt.JwtService;
-import java19.instagramproject.dto.userDto.SimpleResponse;
 import java19.instagramproject.dto.userDto.request.SignInRequest;
 import java19.instagramproject.dto.userDto.request.SignUpRequest;
 import java19.instagramproject.dto.userDto.response.AuthResponse;
@@ -13,7 +12,6 @@ import java19.instagramproject.repo.FollowerRepo;
 import java19.instagramproject.repo.UserRepo;
 import java19.instagramproject.service.AuthService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -58,12 +56,11 @@ public class AuthServiceImpl implements AuthService {
         follower.setSubscriptions(new ArrayList<>());
         followerRepo.save(follower);
 
-        String token = jwtService.generateToken(savedUser);
+
 
         return AuthResponse.builder()
                 .id(savedUser.getId())
                 .userName(savedUser.getUserName())
-                .token(token)
                 .build();
     }
 

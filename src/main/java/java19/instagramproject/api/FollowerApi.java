@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RestController
@@ -20,17 +21,17 @@ public class FollowerApi {
     public List<SearchResponse> search(String word){
         return followerService.search(word);
     }
-    @PreAuthorize("isAuthenticated()")
+
     @PostMapping("{myId}/subscribe/{targetId}")
-    public FollowerResponse subscribe (@PathVariable("myId") Long myId, @PathVariable("targetId") Long targetId){
+    public FollowerResponse subscribe (@PathVariable("myId") Long myId, @PathVariable("targetId") Long targetId) throws AccessDeniedException {
         return followerService.subscribe(myId, targetId);
     }
-    @PreAuthorize("isAuthenticated()")
+
     @GetMapping("/{userId}/subscribers")
     public List<UserShortDto> subscribers(@PathVariable Long userId){
         return followerService.getAllSubscribersByUserId(userId);
     }
-    @PreAuthorize("isAuthenticated()")
+
     @GetMapping("/{userId}/subscriptions")
     public List<UserShortDto> subscriptions(@PathVariable Long userId){
         return followerService.getAllSubscriptionsByUserId(userId);

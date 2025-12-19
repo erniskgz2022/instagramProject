@@ -15,3 +15,14 @@ security:
      key: "MySuperMegaSecretKey123456!@#"
 server:
   port: 8080
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    display-request-duration: true
+    operations-sorter: method
+    tags-sorter: alpha
+    doc-expansion: none     # операциялар жабык ачылат
+    try-it-out-enabled: true
+    filter: true            # search бар
+

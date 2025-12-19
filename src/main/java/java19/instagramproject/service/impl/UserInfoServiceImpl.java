@@ -1,6 +1,7 @@
 package java19.instagramproject.service.impl;
 
 import jakarta.transaction.Transactional;
+import java19.instagramproject.config.security.AccessGuard;
 import java19.instagramproject.dto.userDto.SimpleResponse;
 import java19.instagramproject.dto.userInfoDto.request.UserInfoRequest;
 import java19.instagramproject.dto.userInfoDto.response.UserInfoResponse;
@@ -13,12 +14,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class UserInfoServiceImpl implements UserInfoService {
     private final UserRepo  userRepo;
     private final UserInfoRepo userInfoRepo;
+    private final AccessGuard accessGuard;
     @Override
     public SimpleResponse saveUserInfo(Long userId, UserInfoRequest request) {
         User user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("user not found!"));
@@ -61,9 +65,12 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
-    public SimpleResponse update(Long userId, UserInfoRequest request) {
+    public SimpleResponse update(Long userId, UserInfoRequest request) throws AccessDeniedException {
         UserInfo info = userInfoRepo.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("UserInfo not found!"));
+
+        accessGuard.allow(userId);
+
         info.setFullName(request.fullName());
         info.setBiography(request.biography());
         info.setGender(request.gender());
@@ -78,9 +85,10 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
-    public SimpleResponse changeImage(Long userId, String newImage) {
+    public SimpleResponse changeImage(Long userId, String newImage) throws AccessDeniedException {
         UserInfo info = userInfoRepo.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("UserInfo not found!"));
+        accessGuard.allow(userId);
         info.setImage(newImage);
         userInfoRepo.save(info);
         return SimpleResponse
@@ -92,9 +100,11 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
-    public SimpleResponse deleteImage(Long userId) {
+    public SimpleResponse deleteImage(Long userId) throws AccessDeniedException {
         UserInfo info = userInfoRepo.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("UserInfo not found!"));
+
+        accessGuard.allow(userId);
 
         info.setImage(null);
         userInfoRepo.save(info);

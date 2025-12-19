@@ -1,6 +1,7 @@
 package java19.instagramproject.service.impl;
 
 import jakarta.transaction.Transactional;
+import java19.instagramproject.config.security.AccessGuard;
 import java19.instagramproject.dto.followerDto.UserShortDto;
 import java19.instagramproject.dto.followerDto.response.FollowerResponse;
 import java19.instagramproject.dto.followerDto.response.SearchResponse;
@@ -11,12 +12,14 @@ import java19.instagramproject.service.FollowerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class FollowerServiceImpl implements FollowerService {
     private final UserRepo userRepo;
+    private final AccessGuard accessGuard;
     @Override
     public List<SearchResponse> search(String word) {
         return userRepo.search(word)
@@ -30,11 +33,11 @@ public class FollowerServiceImpl implements FollowerService {
     }
 
     @Override
-    public FollowerResponse subscribe(Long myId, Long targetUserId) {
+    public FollowerResponse subscribe(Long myId, Long targetUserId) throws AccessDeniedException {
         if (myId.equals(targetUserId)) {
             throw new RuntimeException("You can't subscribe to yourself");
         }
-
+        accessGuard.allow(myId);
         User me = userRepo.findById(myId).orElseThrow(() -> new RuntimeException("user not found"));
         User target = userRepo.findById(targetUserId).orElseThrow(() -> new RuntimeException("target user not found"));
 
