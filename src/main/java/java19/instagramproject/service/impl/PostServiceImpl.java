@@ -130,7 +130,7 @@ public class PostServiceImpl implements PostService {
         Post post = postRepo.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
         accessGuard.allow(post.getUser().getId());
-
+        postRepo.delete(post);
         return  SimpleResponse
                 .builder()
                 .httpStatus(HttpStatus.OK)
