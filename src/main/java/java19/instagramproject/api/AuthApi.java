@@ -5,7 +5,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java19.instagramproject.dto.userDto.request.SignInRequest;
 import java19.instagramproject.dto.userDto.request.SignUpRequest;
-import java19.instagramproject.dto.userDto.response.AuthResponse;
+import java19.instagramproject.dto.userDto.response.AuthSigInResponse;
+import java19.instagramproject.dto.userDto.response.AuthSigUpResponse;
 import java19.instagramproject.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,7 +28,7 @@ public class AuthApi {
             consumes = "application/json",
             produces = "application/json"
     )
-    public AuthResponse signUp(@Valid @RequestBody SignUpRequest request) {
+    public AuthSigUpResponse signUp(@Valid @RequestBody SignUpRequest request) {
         return authService.signUp(request);
     }
     @Operation(
@@ -35,7 +36,7 @@ public class AuthApi {
             description = "Authenticate user and return JWT token"
     )
     @PostMapping("/signIn")
-    public AuthResponse signIn(@Valid @RequestBody SignInRequest request) {
+    public AuthSigInResponse signIn(@Valid @RequestBody SignInRequest request) {
         return authService.signIn(request);
     }
 }

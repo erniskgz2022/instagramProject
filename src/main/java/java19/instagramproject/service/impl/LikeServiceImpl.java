@@ -41,9 +41,7 @@ public class LikeServiceImpl implements LikeService {
             return new SimpleResponse(HttpStatus.OK, "Like removed");
         }
 
-        accessGuard.allow(userId);
         Like like = new Like();
-        like.setLike(true);
         like.setUser(user);
         like.setPost(post);
 

@@ -4,7 +4,8 @@ import jakarta.transaction.Transactional;
 import java19.instagramproject.config.jwt.JwtService;
 import java19.instagramproject.dto.userDto.request.SignInRequest;
 import java19.instagramproject.dto.userDto.request.SignUpRequest;
-import java19.instagramproject.dto.userDto.response.AuthResponse;
+import java19.instagramproject.dto.userDto.response.AuthSigInResponse;
+import java19.instagramproject.dto.userDto.response.AuthSigUpResponse;
 import java19.instagramproject.entity.Follower;
 import java19.instagramproject.entity.User;
 import java19.instagramproject.enums.Role;
@@ -29,7 +30,7 @@ public class AuthServiceImpl implements AuthService {
     private final FollowerRepo followerRepo;
 
     @Override
-    public AuthResponse signUp(SignUpRequest request) {
+    public AuthSigUpResponse signUp(SignUpRequest request) {
 
         if (userRepo.existsByEmail(request.email())) {
             throw new RuntimeException("Email already exists!");
@@ -58,14 +59,14 @@ public class AuthServiceImpl implements AuthService {
 
 
 
-        return AuthResponse.builder()
+        return AuthSigUpResponse.builder()
                 .id(savedUser.getId())
                 .userName(savedUser.getUserName())
                 .build();
     }
 
     @Override
-    public AuthResponse signIn(SignInRequest request) {
+    public AuthSigInResponse signIn(SignInRequest request) {
         User user;
 
         if (request.login().contains("@")){
@@ -79,7 +80,7 @@ public class AuthServiceImpl implements AuthService {
             throw  new BadCredentialsException("Invalid username or password");
         }
         String token = jwtService.generateToken(user);
-        return AuthResponse
+        return AuthSigInResponse
                 .builder()
                 .id(user.getId())
                 .userName(user.getUserName())

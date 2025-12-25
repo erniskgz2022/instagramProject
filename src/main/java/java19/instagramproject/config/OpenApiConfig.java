@@ -13,18 +13,49 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI openAPI() {
 
+        /**
+         * JWT Bearer Security Scheme
+         *
+         * Бул Swagger'ге:
+         * - Authorization header колдонуларын
+         * - типи HTTP экенин
+         * - схемасы "bearer" экенин
+         * - формат JWT экенин билдирет
+         *
+         * Натыйжада Swagger UI'да  Authorize кнопкасы чыгат
+         */
         SecurityScheme bearerAuth = new SecurityScheme()
-                .type(SecurityScheme.Type.HTTP)
-                .scheme("bearer")
-                .bearerFormat("JWT");
+                .type(SecurityScheme.Type.HTTP)   // HTTP authentication
+                .scheme("bearer")                 // Bearer token схемасы
+                .bearerFormat("JWT");             // Token форматы (JWT)
 
+        /**
+         * OpenAPI негизги конфигурациясы
+         */
         return new OpenAPI()
+                /**
+                 * API жөнүндө жалпы маалымат
+                 */
                 .info(new Info()
-                        .title("Instagram API")
+                        .title("Instagram API")   // Swagger UI'дагы аталышы
                         .description("Instagram clone backend API documentation")
-                        .version("1.0.0")
+                        .version("1.0.0")         // API версиясы
                 )
-                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
+
+                /**
+                 * Бул security requirement:
+                 * - бардык endpoint'тер үчүн Bearer Auth талап кылынат
+                 * - Swagger ар бир request'ке Authorization header кошот
+                 */
+                .addSecurityItem(
+                        new SecurityRequirement().addList("bearerAuth")
+                )
+
+                /**
+                 * SecurityScheme'ди OpenAPI'ге каттайбыз
+                 * "bearerAuth" — бул схеманын аты
+                 * SecurityRequirement'те да УШУЛ ат колдонулат
+                 */
                 .schemaRequirement("bearerAuth", bearerAuth);
     }
 }

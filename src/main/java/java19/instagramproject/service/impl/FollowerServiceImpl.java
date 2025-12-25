@@ -35,7 +35,7 @@ public class FollowerServiceImpl implements FollowerService {
     @Override
     public FollowerResponse subscribe(Long myId, Long targetUserId) throws AccessDeniedException {
         if (myId.equals(targetUserId)) {
-            throw new RuntimeException("You can't subscribe to yourself");
+            throw new IllegalArgumentException("You can't subscribe to yourself");
         }
         accessGuard.allow(myId);
         User me = userRepo.findById(myId).orElseThrow(() -> new RuntimeException("user not found"));

@@ -1,19 +1,14 @@
 package java19.instagramproject.service.impl;
 
 import jakarta.transaction.Transactional;
-import java19.instagramproject.config.jwt.JwtService;
 import java19.instagramproject.config.security.AccessGuard;
 import java19.instagramproject.dto.postDto.response.PostResponse;
 import java19.instagramproject.dto.userDto.SimpleResponse;
-import java19.instagramproject.dto.userDto.request.SignInRequest;
 import java19.instagramproject.dto.userDto.request.SignUpRequest;
-import java19.instagramproject.dto.userDto.response.AuthResponse;
 import java19.instagramproject.dto.userDto.response.UserByIdResponse;
 import java19.instagramproject.dto.userDto.response.UserListResponse;
 import java19.instagramproject.dto.userDto.response.UserResponse;
 import java19.instagramproject.entity.*;
-import java19.instagramproject.enums.Role;
-import java19.instagramproject.repo.FollowerRepo;
 import java19.instagramproject.repo.UserRepo;
 import java19.instagramproject.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +17,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.AccessDeniedException;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -105,8 +99,6 @@ public class UserServiceImpl implements UserService {
         user.setEmail(request.email());
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setPhoneNumber(request.phoneNumber());
-        user.getUserInfo().setFullName(request.fullName());
-        user.getUserInfo().setImage(request.image());
         userRepo.save(user);
         return SimpleResponse
                 .builder()
